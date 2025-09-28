@@ -1,4 +1,7 @@
-#include <bits/stdc++.h>
+#include <iostream>
+#include <string>
+#include <stdexcept>
+#include <fstream>
 #include "CalcList.hpp"
 using namespace std;
 

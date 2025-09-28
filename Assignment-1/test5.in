@@ -1,0 +1,4 @@
+# Create test5.in - Just to check initial total
+cat > test5.in << 'EOF'
+0
+EOF

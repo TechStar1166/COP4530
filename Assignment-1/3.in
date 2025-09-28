@@ -1,0 +1,12 @@
+# Create test3.in - Basic operations test
+cat > test3.in << 'EOF'
+5
+newOperation addition 10
+newOperation multiplication 5
+newOperation subtraction 15
+newOperation subtraction 30
+newOperation addition 5
+EOF
+
+
+

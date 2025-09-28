@@ -1,56 +1,142 @@
 /* 
 CalcList.cpp 
 
-Name: Amrit Selva Ganesh
-U-Number: U31598674
+Name: 
+U-Number: 
 
-Instructions: 
+Restrictions:
 
-    For Programming Project 1, the student will implement a linked list based arithmetic calculator. 
-    he calculator will be able to perform addition, subtraction, multiplication, and division. The 
-    calculator will keep a running total of the operations completed, the number of operations 
-    completed, and what those operations were. The calculator will also have an "undo" function for 
-    removing the last operation. The calculator will also be able to output a string of the operations 
-    completed so far with fixed precision.
+● Do not change the names or parameters of any of the methods in the CalcList class.
+● Do not add any additional public methods to the CalcList class.
+● You may add private methods and private member variables to the CalcList class as needed.
+● You may add additional #include statements if needed.  
 
-    The calculator (which must be called “CalcList”) has to be implemented using a singly, doubly, or 
-    circularly linked list. Any projects that use the C++ Standard Library Lists or other sources to 
-    implement the linked list will receive a zero. The calculator has to implement at least four 
-    methods:
-
-    Abstract Class and Files 
-
-        double  t o t a l ( )   const
-
-        This method returns the current total of the CalcList. Total should run as a constant time 
-        operation. The program should not have to iterate through the entire list each time the total is 
-        needed.
-
-        void  newOperation(const  FUNCTIONS  f u n c ,   const  double  operand)
-
-        Adds an operation to the CalcList and creates a new total. The operation alters total by using
-        the function with the operand. Example: new O per at i on( A D D I T I O N ,   1 0 )  => adds 10 to the 
-        total.
-
-        void  removeLastOperation()
-        
-        Removes the last operation from the calc list and restores the previous total.
-        s t d : : s t r i n g   t o S t r i n g ( u n s i g n e d   s h o r t   p r e c i s i o n )   const
-        Returns a string of the list of operations completed so far formatted with a fixed point precision. 
-        The form of the string should strictly be: "(step): (totalAtStep)(Function)(operand) = (newTotal) 
-        \n".
-
-        Example: t o S t r i n g ( 2 )   =>  " 3 :   3 0 . 0 0 * 1 . 0 0 = 3 0 . 0 0 \ n 2 :   10.00+20.00=30.00\n1:
-        0.00+10.00=10.00\n"
-
-        This project includes an abstract class for the CalcList from which to inherit. This abstract class 
-        (CalcListInterface) contains the pure virtual version of all the required methods. This file also 
-        includes a typedef of an enum used for the four arithmetic functions called FUNCTIONS.
-        Error Message handling and Throw exceptions Handling
-
-        Your code will be tested for all functionality and in order to successfully pass the test cases, 
-        please ensure the following is included in your CaclList.cpp File
-        
-        • Throw a  std::invalid_argument with message “ Cannot Divide By Zero” 
-        • Throw std::runtime_error with message “No Operations to Remove”
 */
+
+#include "CalcList.hpp"
+#include <stdexcept>  // for std::invalid_argument and std::runtime_error
+#include <sstream>    // for std::stringstream
+#include <iomanip>    // for std::fixed and std::setprecision
+
+// Constructor - Initialize empty calculator
+CalcList::CalcList() : head(nullptr), currentTotal(0.0), operationCount(0) {
+    // Start with empty list and zero total
+}
+
+// Destructor - Clean up all allocated memory
+CalcList::~CalcList() {
+    // Remove all operations to free memory
+    while (head != nullptr) {
+        Node* temp = head;
+        head = head->next;
+        delete temp;
+    }
+}
+
+// Return current total (constant time operation)
+double CalcList::total() const {
+    return currentTotal;
+}
+
+// Add a new operation to the calculator
+void CalcList::newOperation(const FUNCTIONS function, const double operand) {
+    // Check for division by zero - EXACT error message required
+    if (function == DIVISION && operand == 0.0) {
+        throw std::invalid_argument("Cannot divide by zero.");
+    }
+    
+    // Store the total before this operation
+    double previousTotal = currentTotal;
+    
+    // Calculate new total based on operation
+    switch (function) {
+        case ADDITION:
+            currentTotal += operand;
+            break;
+        case SUBTRACTION:
+            currentTotal -= operand;
+            break;
+        case MULTIPLICATION:
+            currentTotal *= operand;
+            break;
+        case DIVISION:
+            currentTotal /= operand;  // We already checked for zero above
+            break;
+    }
+    
+    // Create new node with this operation
+    Node* newNode = new Node(function, operand, previousTotal, currentTotal);
+    
+    // Add to front of linked list (most recent operation first)
+    newNode->next = head;
+    head = newNode;
+    
+    // Increment operation counter
+    operationCount++;
+}
+
+// Remove the last operation and restore previous total
+void CalcList::removeLastOperation() {
+    // Check if there are any operations to remove - EXACT error message required
+    if (head == nullptr) {
+        throw std::runtime_error("No operations to remove.");
+    }
+    
+    // Restore the total to what it was before the last operation
+    currentTotal = head->totalBefore;
+    
+    // Remove the first node (most recent operation)
+    Node* nodeToDelete = head;
+    head = head->next;
+    delete nodeToDelete;
+    
+    // Decrement operation counter
+    operationCount--;
+}
+
+// Convert the list of operations to a formatted string
+std::string CalcList::toString(unsigned short precision) const {
+    if (head == nullptr) {
+        return "";  // Empty string if no operations
+    }
+    
+    std::stringstream result;
+    result << std::fixed << std::setprecision(precision);
+    
+    // We need to traverse the list and number operations from most recent to oldest
+    int stepNumber = operationCount;
+    
+    // Traverse the list and build the string
+    Node* current = head;
+    while (current != nullptr) {
+        // Format: "step: totalBefore(symbol)operand=totalAfter\n"
+        result << stepNumber << ": "
+               << current->totalBefore
+               << functionToSymbol(current->operation)
+               << current->operand
+               << "="
+               << current->totalAfter
+               << "\n";
+        
+        current = current->next;
+        stepNumber--;
+    }
+    
+    return result.str();
+}
+
+// Helper function to convert FUNCTIONS enum to operator symbol
+char CalcList::functionToSymbol(FUNCTIONS function) const {
+    switch (function) {
+        case ADDITION:
+            return '+';
+        case SUBTRACTION:
+            return '-';
+        case MULTIPLICATION:
+            return '*';
+        case DIVISION:
+            return '/';
+        default:
+            return '?';  // Should theoretically and practically never happen
+    }
+}

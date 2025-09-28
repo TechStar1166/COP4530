@@ -1,0 +1,11 @@
+For Programming Project 1, the student will implement a linked list based arithmetic calculator. 
+The calculator will be able to perform addition, subtraction, multiplication, and division. 
+The calculator will keep a running total of the operations completed, the number of operations completed, and what 
+those operations were. The calculator will also have an "undo" function for removing the last operation. The 
+calculator will also be able to output a string of the operations completed so far with fixed precision. 
+
+The calculator (which must be called “CalcList”) has to be implemented using a singly, doubly, or circularly linked 
+list. Any projects that use the C++ Standard Library Lists or other sources to implement the linked list will 
+receive a zero. 
+
+The calculator has to implement at least four methods:

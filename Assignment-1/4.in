@@ -1,0 +1,11 @@
+# Create test4.in - With undo operations
+cat > test4.in << 'EOF'
+7
+newOperation addition 10
+newOperation multiplication 5  
+newOperation subtraction 15
+newOperation division 7
+removeLastOperation
+newOperation subtraction 30
+removeLastOperation
+EOF
